@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MotoConnect CI</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F4F3;--card:#fff;--ink:#18221D;--mute:#5C6A63;--green:#0E6B45;--on-green:#fff;--plate:#F5B800;--line:#D9E0DC;--soft:#E6F0EB;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#101714;--card:#18211C;--ink:#EDF2EF;--mute:#9BAAA2;--green:#3DC48A;--on-green:#0B1410;--line:#2A3730;--soft:#1F2B25}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'DM Sans',system-ui,sans-serif}
+h1,h2,h3{font-family:'Bricolage Grotesque','DM Sans',system-ui,sans-serif;margin:0;line-height:1.15}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+.warn{background:var(--plate);color:#18221D;font-size:13px;text-align:center;padding:6px 12px;font-weight:500}
+header h1{font-size:30px;font-weight:800;letter-spacing:-.5px}
+header p{color:var(--mute);margin:6px 0 0}
+nav{display:flex;gap:6px;margin:16px 0;background:var(--soft);padding:4px;border-radius:12px}
+nav button{flex:1;border:0;background:none;color:var(--mute);font:500 14px 'DM Sans',sans-serif;padding:10px 6px;border-radius:9px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--card);color:var(--ink);font-weight:700}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--plate);outline-offset:2px}
+.tools{display:flex;gap:8px;margin-bottom:12px}
+select,input,textarea{width:100%;font:16px 'DM Sans',sans-serif;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+.list{display:grid;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;gap:14px;align-items:center}
+.plate{flex:none;width:64px;height:64px;border-radius:10px;background:var(--plate);color:#18221D;border:3px solid #18221D;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif}
+.plate b{font-size:24px;line-height:1}
+.plate small{font-size:10px;font-family:'DM Sans',sans-serif;margin-top:2px}
+.info{flex:1;min-width:0}
+.info h3{font-size:18px}
+.meta{color:var(--mute);font-size:14px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;background:#9aa}
+.dot.on{background:#1FA463}
+.btn{border:0;border-radius:10px;padding:11px 16px;font:700 15px 'DM Sans',sans-serif;cursor:pointer;background:var(--green);color:var(--on-green);text-decoration:none;display:inline-block;text-align:center}
+.btn.alt{background:var(--soft);color:var(--ink)}
+.btn.sm{padding:9px 12px;font-size:14px}
+.empty{text-align:center;color:var(--mute);padding:28px 8px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+label{display:block;font-weight:700;font-size:14px;margin:12px 0 4px}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.plans{display:grid;gap:10px}
+.price{font:800 28px 'Bricolage Grotesque',sans-serif;margin:6px 0}
+.price small{font:500 14px 'DM Sans',sans-serif;color:var(--mute)}
+.plan ul{margin:8px 0 0;padding-left:20px;color:var(--mute)}
+dialog{border:0;padding:0;border-radius:16px;max-width:560px;width:calc(100% - 24px);background:var(--card);color:var(--ink);max-height:88vh;overflow:auto}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+.dlg{padding:18px}
+.dhead{display:flex;gap:14px;align-items:center;margin-bottom:10px}
+.acts{display:flex;gap:8px;margin:12px 0}.acts .btn{flex:1}
+.rev{border-top:1px solid var(--line);padding:10px 0}
+.stars{color:var(--plate);letter-spacing:2px;font-size:17px}
+.pick{display:flex;gap:4px;margin:6px 0}
+.pick button{border:0;background:none;font-size:32px;line-height:1;cursor:pointer;color:var(--line);padding:2px}
+.pick button.on{color:var(--plate)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:99;max-width:90%;text-align:center}
+.hide{display:none}
+.note{font-size:13px;color:var(--mute);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="warn hide" id="cfgWarn">Configuration Firebase manquante : suivez le guide de mise en ligne.</div>
+<div class="wrap">
+<header>
+  <h1>MotoConnect CI</h1>
+  <p>Trouvez un conducteur de moto de confiance, avec ses notes.</p>
+</header>
+<nav role="tablist">
+  <button role="tab" data-tab="client" aria-selected="true">Trouver un conducteur</button>
+  <button role="tab" data-tab="driver" aria-selected="false">Je suis conducteur</button>
+  <button role="tab" data-tab="plans" aria-selected="false">Abonnements</button>
+</nav>
+
+<section id="client">
+  <div class="tools">
+    <select id="fCommune" aria-label="Commune"></select>
+    <select id="fSort" aria-label="Trier">
+      <option value="best">Mieux notés</option>
+      <option value="avis">Plus d’avis</option>
+    </select>
+  </div>
+  <div class="list" id="list"></div>
+</section>
+
+<section id="driver" class="hide"><div class="panel" id="driverBox"></div></section>
+
+<section id="plans" class="hide">
+  <div class="plans">
+    <div class="panel plan"><h3>Client</h3><div class="price">Gratuit</div>
+      <ul><li>Recherche par commune</li><li>Fiches avec notes et avis</li><li>Contact direct par appel ou WhatsApp</li></ul></div>
+    <div class="panel plan"><h3>Conducteur</h3><div class="price">5 000 FCFA <small>par mois</small></div>
+      <ul><li>Page personnelle gérée par vous</li><li>Note moyenne et avis visibles</li><li>Clients réguliers</li></ul></div>
+    <div class="panel plan"><h3>Restaurant ou entreprise</h3><div class="price">10 000 FCFA <small>par mois</small></div>
+      <ul><li>Page professionnelle</li><li>Accès aux conducteurs les mieux notés</li><li>Contact direct pour livraisons et déplacements</li></ul></div>
+  </div>
+  <p class="note">Paiement par Orange Money, MTN, Moov ou Wave : bientôt disponible.</p>
+</section>
+</div>
+
+<dialog id="dlg" aria-label="Fiche conducteur"><div class="dlg" id="dlgBody"></div></dialog>
+<div class="toast hide" id="toast" role="status"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInAnonymously,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFirestore,collection,doc,getDoc,getDocs,setDoc,updateDoc,writeBatch,query,orderBy,limit,serverTimestamp,increment} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+/* === COLLEZ ICI LA CONFIGURATION FIREBASE (voir le guide) === */
+const firebaseConfig={apiKey:"AIzaSyApHJSafcayDU9Oq31ffU-1zF7jXX098os",authDomain:"motoconnect-ci.firebaseapp.com",projectId:"motoconnect-ci",appId:"1:787444382364:web:9ce0f25a8915a3e2afcb59"};
+/* ============================================================ */
+
+const COMMUNES=['Abobo','Adjamé','Cocody','Marcory','Plateau','Treichville','Yopougon'];
+const configured=firebaseConfig.apiKey!=="COLLE_ICI";
+let auth,db;
+if(configured){const app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app)}else{$('cfgWarn').classList.remove('hide')}
+
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function avg(d){return d.ratingCount>0?d.ratingSum/d.ratingCount:null}
+function stars(n){const r=Math.round(n);return '★★★★★'.slice(0,r)+'☆☆☆☆☆'.slice(0,5-r)}
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.classList.remove('hide');clearTimeout(tt);tt=setTimeout(()=>t.classList.add('hide'),3000)}
+function normPhone(p){let x=p.replace(/[^0-9+]/g,'');if(x[0]!=='+'&&x.length<=10)x='+225'+x;return x}
+function errMsg(e){const c=(e&&e.code)||'';const m={'auth/email-already-in-use':'Cet email a déjà un compte.','auth/invalid-email':'Email invalide.','auth/weak-password':'Mot de passe trop court (6 caractères minimum).','auth/invalid-credential':'Email ou mot de passe incorrect.','auth/operation-not-allowed':'Cette connexion n’est pas activée dans Firebase.','permission-denied':'Action refusée par les règles de sécurité.'};return m[c]||('Erreur : '+(c||(e&&e.message)||'inconnue'))}
+
+function fill(sel,all){sel.innerHTML=(all?'<option value="">Toutes les communes</option>':'')+COMMUNES.map(c=>'<option>'+c+'</option>').join('')}
+fill($('fCommune'),true);
+
+function plate(d){const a=avg(d);return '<div class="plate">'+(a===null?'<b>–</b><small>Nouveau</small>':'<b>'+a.toFixed(1).replace('.',',')+'</b><small>'+d.ratingCount+' avis</small>')+'</div>'}
+
+/* ---------- Liste des conducteurs ---------- */
+let drivers=[];
+async function loadDrivers(){
+  if(!configured){$('list').innerHTML='<div class="empty">Ajoutez votre configuration Firebase pour voir les conducteurs.</div>';return}
+  $('list').innerHTML='<div class="empty">Chargement…</div>';
+  try{
+    const s=await getDocs(query(collection(db,'drivers'),limit(200)));
+    drivers=s.docs.map(x=>Object.assign({id:x.id},x.data()));
+    render();
+  }catch(e){$('list').innerHTML='<div class="empty">Impossible de charger la liste. '+esc(errMsg(e))+'</div>'}
+}
+function render(){
+  const c=$('fCommune').value,s=$('fSort').value;
+  const l=drivers.filter(d=>!c||d.commune===c);
+  l.sort((a,b)=>s==='avis'?(b.ratingCount||0)-(a.ratingCount||0):(avg(b)||0)-(avg(a)||0));
+  $('list').innerHTML=l.length?l.map(d=>'<div class="card">'+plate(d)+'<div class="info"><h3>'+esc(d.name)+'</h3><div class="meta">'+esc(d.commune)+' · '+esc(d.moto||'Moto')+'</div><div class="meta"><span class="dot'+(d.on?' on':'')+'"></span>'+(d.on?'Disponible':'Indisponible')+'</div></div><button class="btn sm" data-open="'+esc(d.id)+'">Voir la fiche</button></div>').join(''):'<div class="empty">Aucun conducteur dans cette commune pour le moment. Soyez le premier à créer votre page.</div>';
+}
+$('fCommune').onchange=render;$('fSort').onchange=render;
+$('list').onclick=e=>{const b=e.target.closest('[data-open]');if(b)openDlg(b.getAttribute('data-open'))};
+
+/* ---------- Fiche + notation ---------- */
+let cur=null,pickV=0;
+async function openDlg(id){
+  cur=drivers.find(d=>d.id===id);if(!cur)return;pickV=0;
+  const d=cur,tel=normPhone(d.phone||'');
+  let revs=[],already=false;
+  try{
+    const rs=await getDocs(query(collection(db,'drivers',id,'reviews'),orderBy('at','desc'),limit(20)));
+    revs=rs.docs.map(x=>x.data());
+    if(auth.currentUser){already=(await getDoc(doc(db,'drivers',id,'reviews',auth.currentUser.uid))).exists()}
+  }catch(e){}
+  const self=auth.currentUser&&auth.currentUser.uid===id;
+  const revHtml=revs.length?revs.map(r=>'<div class="rev"><span class="stars" aria-label="'+r.s+' sur 5">'+stars(r.s)+'</span> <b>'+esc(r.n)+'</b><div>'+esc(r.t)+'</div></div>').join(''):'<p class="meta">Aucun avis pour le moment.</p>';
+  let form='';
+  if(self)form='<p class="meta">C’est votre page : vous ne pouvez pas vous noter.</p>';
+  else if(already)form='<p class="meta">Vous avez déjà noté ce conducteur. Merci.</p>';
+  else form='<h3 style="font-size:17px">Notez ce conducteur</h3><div class="pick" id="pick">'+[1,2,3,4,5].map(i=>'<button type="button" data-s="'+i+'" aria-label="'+i+' étoiles">★</button>').join('')+'</div><input id="rName" maxlength="30" placeholder="Votre prénom"><textarea id="rText" rows="2" maxlength="200" placeholder="Votre avis (facultatif)" style="margin-top:8px"></textarea><p style="margin:10px 0 0"><button class="btn" id="rSend">Envoyer ma note</button></p><p class="note" id="rErr" role="alert"></p>';
+  $('dlgBody').innerHTML='<div class="dhead">'+plate(d)+'<div><h2 style="font-size:22px">'+esc(d.name)+'</h2><div class="meta">'+esc(d.commune)+' · '+esc(d.moto||'Moto')+'</div><div class="meta"><span class="dot'+(d.on?' on':'')+'"></span>'+(d.on?'Disponible':'Indisponible')+'</div></div></div>'+
+   (d.bio?'<p>'+esc(d.bio)+'</p>':'')+
+   '<div class="acts"><a class="btn" href="tel:'+esc(tel)+'">Appeler</a><a class="btn alt" target="_blank" rel="noopener" href="https://wa.me/'+esc(tel.replace('+',''))+'">WhatsApp</a></div>'+
+   '<h3 style="font-size:17px">Avis</h3>'+revHtml+'<div style="margin-top:12px">'+form+'</div><p style="margin:14px 0 0"><button class="btn alt" id="dClose">Fermer</button></p>';
+  if(!$('dlg').open)$('dlg').showModal();
+}
+$('dlgBody').onclick=async e=>{
+  const t=e.target;
+  if(t.id==='dClose')$('dlg').close();
+  if(t.getAttribute('data-s')){pickV=+t.getAttribute('data-s');[...$('pick').children].forEach((b,i)=>b.className=i<pickV?'on':'')}
+  if(t.id==='rSend'){
+    if(!pickV){$('rErr').textContent='Choisissez de 1 à 5 étoiles.';return}
+    t.disabled=true;
+    try{
+      let u=auth.currentUser;if(!u)u=(await signInAnonymously(auth)).user;
+      const b=writeBatch(db);
+      b.set(doc(db,'drivers',cur.id,'reviews',u.uid),{s:pickV,n:$('rName').value.trim()||'Client',t:$('rText').value.trim(),at:serverTimestamp()});
+      b.update(doc(db,'drivers',cur.id),{ratingSum:increment(pickV),ratingCount:increment(1)});
+      await b.commit();
+      toast('Merci, votre note est publiée.');
+      const id=cur.id;await loadDrivers();openDlg(id);
+    }catch(err){t.disabled=false;$('rErr').textContent=err.code==='permission-denied'?'Note refusée : vous avez peut-être déjà noté ce conducteur.':errMsg(err)}
+  }
+};
+$('dlg').addEventListener('click',e=>{if(e.target===$('dlg'))$('dlg').close()});
+
+/* ---------- Espace conducteur ---------- */
+async function renderDriver(){
+  const box=$('driverBox');
+  if(!configured){box.innerHTML='<p class="meta">Ajoutez votre configuration Firebase pour activer cet espace.</p>';return}
+  const u=auth.currentUser;
+  if(!u||u.isAnonymous){
+    box.innerHTML='<h2>Espace conducteur</h2><p class="meta">Créez un compte pour gérer votre page. Abonnement : 5 000 FCFA par mois.</p><label for="aMail">Email</label><input id="aMail" type="email" autocomplete="email"><label for="aPass">Mot de passe (6 caractères minimum)</label><input id="aPass" type="password" autocomplete="current-password"><div class="row" style="margin-top:16px"><button class="btn" id="aReg">Créer mon compte</button><button class="btn alt" id="aLog">Me connecter</button></div><p class="note" id="aErr" role="alert"></p>';
+    return;
+  }
+  let d={};
+  try{const s=await getDoc(doc(db,'drivers',u.uid));if(s.exists())d=s.data()}catch(e){}
+  box.innerHTML='<h2>Votre page conducteur</h2><p class="meta">'+esc(u.email||'')+'</p><label for="dName">Nom affiché</label><input id="dName" maxlength="40" value="'+esc(d.name)+'" autocomplete="name"><div class="row"><div><label for="dCommune">Commune</label><select id="dCommune">'+COMMUNES.map(c=>'<option'+(c===d.commune?' selected':'')+'>'+c+'</option>').join('')+'</select></div><div><label for="dMoto">Moto</label><input id="dMoto" maxlength="30" value="'+esc(d.moto)+'" placeholder="Ex : Haojue 125"></div></div><label for="dPhone">Numéro WhatsApp</label><input id="dPhone" inputmode="tel" maxlength="20" value="'+esc(d.phone)+'" placeholder="07 00 00 00 00"><label for="dBio">Présentation</label><textarea id="dBio" rows="3" maxlength="200">'+esc(d.bio)+'</textarea><label><input type="checkbox" id="dOn" style="width:auto;margin-right:8px"'+(d.on!==false?' checked':'')+'>Disponible maintenant</label><div class="row" style="margin-top:16px"><button class="btn" id="dSave">Enregistrer ma page</button><button class="btn alt" id="aOut">Me déconnecter</button></div><p class="note" id="dErr" role="alert"></p>';
+}
+$('driverBox').onclick=async e=>{
+  const id=e.target.id;
+  try{
+    if(id==='aReg'||id==='aLog'){
+      const m=$('aMail').value.trim(),p=$('aPass').value;
+      if(id==='aReg')await createUserWithEmailAndPassword(auth,m,p);else await signInWithEmailAndPassword(auth,m,p);
+    }
+    if(id==='aOut'){await signOut(auth);toast('Vous êtes déconnecté.')}
+    if(id==='dSave'){
+      const f={name:$('dName').value.trim(),commune:$('dCommune').value,moto:$('dMoto').value.trim(),phone:$('dPhone').value.trim(),bio:$('dBio').value.trim(),on:$('dOn').checked};
+      if(f.name.length<2){$('dErr').textContent='Entrez votre nom.';return}
+      if(f.phone.replace(/[^0-9]/g,'').length<8){$('dErr').textContent='Entrez un numéro WhatsApp valide.';return}
+      const ref=doc(db,'drivers',auth.currentUser.uid);
+      if((await getDoc(ref)).exists())await updateDoc(ref,f);
+      else await setDoc(ref,Object.assign({ratingSum:0,ratingCount:0,createdAt:serverTimestamp()},f));
+      $('dErr').textContent='';toast('Votre page est publiée.');await loadDrivers();show('client');
+    }
+  }catch(err){const el=$('aErr')||$('dErr');if(el)el.textContent=errMsg(err)}
+};
+if(configured)onAuthStateChanged(auth,renderDriver);else renderDriver();
+
+/* ---------- Onglets ---------- */
+function show(t){
+  ['client','driver','plans'].forEach(s=>$(s).classList.toggle('hide',s!==t));
+  document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',b.getAttribute('data-tab')===t));
+}
+document.querySelector('nav').onclick=e=>{const b=e.target.closest('button');if(b)show(b.getAttribute('data-tab'))};
+loadDrivers();
+</script>
+</body>
+</html>
